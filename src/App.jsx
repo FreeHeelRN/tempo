@@ -8,7 +8,7 @@ The scale is a poor proxy for body composition — reference DEXA and Hume Pod b
 
 IMPORTANT: If user is lifting weights + eating high protein, the scale won't move much because muscle gain masks fat loss. Emphasize this during onboarding and when they express frustration about scale not moving. Recommend DEXA scans (gold standard), measuring tape (waist/hips), or 8-electrode scales like Hume Pod to track real body composition changes.
 
-Tone: direct, encouraging, knowledgeable friend. Weave in expert perspectives naturally. Keep responses short (2-3 sentences unless providing detailed feedback). Ask ONE question at a time during onboarding.
+Tone: direct, encouraging, knowledgeable friend. Reference expert frameworks naturally (Attia's focus on body composition over scale weight, Huberman's circadian/sleep science, Panda's time-restricted eating research) but DO NOT quote them directly unless it's an actual quote. Keep responses short (2-3 sentences unless providing detailed feedback). Ask ONE question at a time during onboarding.
 
 When analyzing meals, respond with JSON:
 {"nqs": <1-10>, "summary": "<one sentence>", "goalInsights": [{"goal": "<name>", "verdict": "positive|neutral|caution", "reason": "<1-2 sentences>"}], "suggestion": "<one tip>", "encouragement": "<optional motivating line>"}
@@ -30,15 +30,15 @@ Note their tracking setup so you can:
 After onboarding, you're their ongoing coach. Answer questions, analyze meals, provide encouragement, and adjust advice based on their logged data.`;
 
 const DAILY_TIPS = [
-  "DEXA > scale for body comp. Consider one every 3-6 months. (Attia)",
-  "Target ~1g protein per lb of target body weight distributed across meals. (Attia)",
-  "Poor sleep raises cortisol and ghrelin — fat loss is nearly impossible on chronic sleep deprivation. (Huberman)",
-  "Get bright light in eyes within 30-60 min of waking to anchor circadian rhythm. (Huberman)",
-  "Eat within a consistent 10-12 hour window. Same food at 7am vs 10pm = different metabolic outcome. (Panda)",
-  "Stop eating 2-3 hours before bed. Late eating disrupts overnight metabolic repair. (Panda)",
-  "Zone 2 cardio 3-4x/week is the highest-leverage cardiovascular investment. (Attia)",
-  "Consistency of eating window matters more than perfection. (Panda)",
-  "Lifting + high protein = muscle gain can mask fat loss. The scale won't move much. Use DEXA, measuring tape, or 8-electrode scale like Hume Pod to see real progress. (Attia)"
+  "DEXA scans show body composition better than scale weight. Consider one every 3-6 months.",
+  "Target ~1g protein per lb of target body weight distributed across meals.",
+  "Poor sleep raises cortisol and ghrelin — fat loss is nearly impossible on chronic sleep deprivation.",
+  "Get bright light in eyes within 30-60 min of waking to anchor circadian rhythm.",
+  "Eat within a consistent 10-12 hour window. Same food at 7am vs 10pm = different metabolic outcome.",
+  "Stop eating 2-3 hours before bed. Late eating disrupts overnight metabolic repair.",
+  "Zone 2 cardio 3-4x/week is one of the highest-leverage cardiovascular investments.",
+  "Consistency of eating window matters more than perfection.",
+  "Lifting + high protein = muscle gain can mask fat loss. The scale won't move much. Use DEXA, measuring tape, or 8-electrode scale like Hume Pod to see real progress."
 ]
 
 function App() {
