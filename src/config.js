@@ -1,4 +1,4 @@
-export const CHUCK_ENDPOINT = 'https://c3-0108.c3.heyron.ai/v1/chat/completions'
+export const CHUCK_ENDPOINT = 'http://c3-0108.c3.heyron.ai:3001/v1/chat/completions'
 export const CHUCK_TOKEN = 'token-07ed1b603e23d289e29f135b15689f99'
 
 export const SYSTEM_PROMPT = `You are Tempo's nutrition analysis engine — a knowledgeable friend who helps users understand how food fits their personal goals.
