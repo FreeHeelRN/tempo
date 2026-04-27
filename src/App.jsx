@@ -11,16 +11,16 @@ IMPORTANT: If user is lifting weights + eating high protein, the scale won't mov
 Tone: direct, encouraging, knowledgeable friend. Reference expert frameworks naturally (Attia's focus on body composition over scale weight, Huberman's circadian/sleep science, Panda's time-restricted eating research) but DO NOT quote them directly unless it's an actual quote. Keep responses short (2-3 sentences unless providing detailed feedback). Ask ONE question at a time during onboarding.
 
 When analyzing meals, respond with JSON:
-{"nqs": <1-10>, "summary": "<one sentence>", "goalInsights": [{"goal": "<name>", "verdict": "positive|neutral|caution", "reason": "<1-2 sentences>"}], "suggestion": "<one tip>", "encouragement": "<optional motivating line>"}
+{"summary": "<one sentence>", "goalInsights": [{"goal": "<name>", "verdict": "positive|neutral|caution", "reason": "<1-2 sentences>"}], "suggestion": "<one tip>", "encouragement": "<optional motivating line>"}
 
 During onboarding, gather:
-1. What they're currently doing for nutrition
-2. What they've tried before
-3. What worked and what didn't
-4. Their weight/body composition goal
-5. How aggressive they want to be
-6. Their sleep quality
-7. What tracking tools they currently use (Apple Watch, Fitbit, Whoop, Oura, smart scale like Hume Pod/Withings/DEXA access, food tracking apps, etc.)
+1. What tracking tools they currently use (Apple Watch, Fitbit, Whoop, Oura, smart scale like Hume Pod/Withings/DEXA access, food tracking apps, etc.)
+2. What they're currently doing for nutrition
+3. What they've tried before
+4. What worked and what didn't
+5. Their weight/body composition goal
+6. How aggressive they want to be
+7. Their sleep quality
 
 Note their tracking setup so you can:
 - Reference their existing data sources
@@ -41,23 +41,39 @@ const DAILY_TIPS = [
   "Lifting + high protein = muscle gain can mask fat loss. The scale won't move much. Use DEXA, measuring tape, or 8-electrode scale like Hume Pod to see real progress."
 ]
 
+const CARD_TYPES = [
+  { id: 'weight', label: 'Weight', icon: '⚖️', prompt: 'Enter current weight (lbs)' },
+  { id: 'sleep', label: 'Sleep', icon: '😴', prompt: 'Hours slept last night' },
+  { id: 'meals', label: 'Meals Today', icon: '🍽️', prompt: null },
+  { id: 'streak', label: 'Streak', icon: '🎯', prompt: null },
+  { id: 'water', label: 'Water', icon: '💧', prompt: 'Cups of water today' },
+  { id: 'steps', label: 'Steps', icon: '👟', prompt: 'Steps today' }
+]
+
 function App() {
-  const [view, setView] = useState('welcome') // welcome, chat, logMeal, stats
+  const [view, setView] = useState('welcome')
   const [chatHistory, setChatHistory] = useState([])
   const [userProfile, setUserProfile] = useState({})
   const [meals, setMeals] = useState([])
+  const [stats, setStats] = useState({})
+  const [dashboardCards, setDashboardCards] = useState(['weight', 'sleep', 'meals', 'streak'])
   const [loading, setLoading] = useState(false)
   const [input, setInput] = useState('')
+  const [editingCard, setEditingCard] = useState(null)
   const messagesEndRef = useRef(null)
 
   useEffect(() => {
     const savedProfile = localStorage.getItem('tempo_profile')
     const savedChat = localStorage.getItem('tempo_chat')
     const savedMeals = localStorage.getItem('tempo_meals')
+    const savedStats = localStorage.getItem('tempo_stats')
+    const savedCards = localStorage.getItem('tempo_cards')
     
     if (savedProfile) setUserProfile(JSON.parse(savedProfile))
     if (savedChat) setChatHistory(JSON.parse(savedChat))
     if (savedMeals) setMeals(JSON.parse(savedMeals))
+    if (savedStats) setStats(JSON.parse(savedStats))
+    if (savedCards) setDashboardCards(JSON.parse(savedCards))
     
     if (savedProfile && savedChat) {
       setView('home')
@@ -75,6 +91,14 @@ function App() {
   useEffect(() => {
     localStorage.setItem('tempo_meals', JSON.stringify(meals))
   }, [meals])
+
+  useEffect(() => {
+    localStorage.setItem('tempo_stats', JSON.stringify(stats))
+  }, [stats])
+
+  useEffect(() => {
+    localStorage.setItem('tempo_cards', JSON.stringify(dashboardCards))
+  }, [dashboardCards])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -165,7 +189,6 @@ function App() {
       setMeals([newMeal, ...meals])
       setView('home')
       
-      // Add to chat history
       setChatHistory([
         ...chatHistory,
         { role: 'user', content: `I just ate: ${mealDescription}` },
@@ -179,6 +202,17 @@ function App() {
     }
   }
 
+  const updateStat = (cardId, value) => {
+    setStats({
+      ...stats,
+      [cardId]: {
+        value,
+        timestamp: new Date().toISOString()
+      }
+    })
+    setEditingCard(null)
+  }
+
   const getTodaysTip = () => {
     const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000)
     return DAILY_TIPS[dayOfYear % DAILY_TIPS.length]
@@ -188,6 +222,27 @@ function App() {
     const today = new Date().toDateString()
     return meals.filter(m => new Date(m.timestamp).toDateString() === today)
   }
+
+  const getCardValue = (cardId) => {
+    switch(cardId) {
+      case 'weight':
+        return stats.weight ? `${stats.weight.value} lbs` : '--'
+      case 'sleep':
+        return stats.sleep ? `${stats.sleep.value} hrs` : '--'
+      case 'meals':
+        return `${getMealsToday().length} today`
+      case 'streak':
+        return stats.streak ? `${stats.streak.value} days` : '0 days'
+      case 'water':
+        return stats.water ? `${stats.water.value} / 8` : '0 / 8'
+      case 'steps':
+        return stats.steps ? stats.steps.value.toLocaleString() : '--'
+      default:
+        return '--'
+    }
+  }
+
+  const getCardType = (id) => CARD_TYPES.find(c => c.id === id)
 
   return (
     <div className="app">
@@ -211,35 +266,42 @@ function App() {
 
       {view === 'home' && (
         <div className="home">
+          <div className="greeting">
+            <h2>Good Morning 👋</h2>
+          </div>
+
           <div className="daily-tip">
             <h3>💡 Today's Tip</h3>
             <p>{getTodaysTip()}</p>
           </div>
 
-          <div className="quick-stats">
-            <div className="stat-card">
-              <span className="stat-value">{getMealsToday().length}</span>
-              <span className="stat-label">Meals Today</span>
-            </div>
-            <div className="stat-card">
-              <span className="stat-value">{userProfile.lastWeight || '--'}</span>
-              <span className="stat-label">Last Weight</span>
-            </div>
-            <div className="stat-card">
-              <span className="stat-value">{userProfile.lastSleep || '--'}</span>
-              <span className="stat-label">Last Sleep</span>
-            </div>
+          <div className="stat-cards">
+            {dashboardCards.map(cardId => {
+              const card = getCardType(cardId)
+              return (
+                <div 
+                  key={cardId} 
+                  className="stat-card"
+                  onClick={() => card.prompt && setEditingCard(cardId)}
+                >
+                  <div className="stat-icon">{card.icon}</div>
+                  <div className="stat-value">{getCardValue(cardId)}</div>
+                  <div className="stat-label">{card.label}</div>
+                </div>
+              )
+            })}
           </div>
 
+          <button className="customize-btn" onClick={() => setView('customize')}>
+            ⚙️ Customize Cards
+          </button>
+
           <div className="action-buttons">
-            <button className="action-btn" onClick={() => setView('logMeal')}>
+            <button className="action-btn primary" onClick={() => setView('logMeal')}>
               📝 Log Meal
             </button>
             <button className="action-btn" onClick={() => setView('chat')}>
               💬 Chat with Chuck
-            </button>
-            <button className="action-btn" onClick={() => setView('stats')}>
-              📊 View Stats
             </button>
           </div>
 
@@ -250,18 +312,79 @@ function App() {
                 <div key={meal.id} className="meal-card">
                   <div className="meal-header">
                     <span className="meal-desc">{meal.description}</span>
-                    <span className={`nqs-badge nqs-${Math.floor(meal.analysis.nqs)}`}>
-                      {meal.analysis.nqs}
+                    <span className="meal-time">
+                      {new Date(meal.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                     </span>
                   </div>
                   <p className="meal-summary">{meal.analysis.summary}</p>
-                  <span className="meal-time">
-                    {new Date(meal.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                  </span>
                 </div>
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {view === 'customize' && (
+        <div className="customize-view">
+          <div className="view-header">
+            <button className="back-btn" onClick={() => setView('home')}>←</button>
+            <h2>Customize Dashboard</h2>
+            <div></div>
+          </div>
+          <div className="customize-content">
+            <p className="instruction">Select 4 cards to show on your dashboard:</p>
+            <div className="card-selector">
+              {CARD_TYPES.map(card => (
+                <button
+                  key={card.id}
+                  className={`card-option ${dashboardCards.includes(card.id) ? 'selected' : ''}`}
+                  onClick={() => {
+                    if (dashboardCards.includes(card.id)) {
+                      setDashboardCards(dashboardCards.filter(c => c !== card.id))
+                    } else if (dashboardCards.length < 4) {
+                      setDashboardCards([...dashboardCards, card.id])
+                    }
+                  }}
+                  disabled={!dashboardCards.includes(card.id) && dashboardCards.length >= 4}
+                >
+                  {card.icon} {card.label}
+                </button>
+              ))}
+            </div>
+            <button className="btn-primary" onClick={() => setView('home')}>
+              Save
+            </button>
+          </div>
+        </div>
+      )}
+
+      {editingCard && (
+        <div className="modal">
+          <div className="modal-content">
+            <h3>{getCardType(editingCard).prompt}</h3>
+            <input
+              type="number"
+              autoFocus
+              placeholder="Enter value"
+              onKeyPress={(e) => {
+                if (e.key === 'Enter' && e.target.value) {
+                  updateStat(editingCard, e.target.value)
+                }
+              }}
+            />
+            <div className="modal-actions">
+              <button className="btn-secondary" onClick={() => setEditingCard(null)}>Cancel</button>
+              <button 
+                className="btn-primary"
+                onClick={(e) => {
+                  const input = e.target.previousElementSibling.previousElementSibling
+                  if (input.value) updateStat(editingCard, input.value)
+                }}
+              >
+                Save
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -309,34 +432,21 @@ function App() {
             <div></div>
           </div>
           <div className="log-meal-content">
-            <p className="instruction">Describe what you just ate:</p>
+            <p className="instruction">What did you just eat?</p>
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="e.g., Grilled chicken breast with broccoli and brown rice"
               rows="4"
+              autoFocus
             />
             <button 
               className="btn-primary"
               onClick={() => logMeal(input)}
               disabled={loading || !input.trim()}
             >
-              {loading ? 'Analyzing...' : 'Analyze Meal'}
+              {loading ? 'Analyzing...' : 'Log & Analyze'}
             </button>
-          </div>
-        </div>
-      )}
-
-      {view === 'stats' && (
-        <div className="stats-view">
-          <div className="view-header">
-            <button className="back-btn" onClick={() => setView('home')}>←</button>
-            <h2>Stats</h2>
-            <div></div>
-          </div>
-          <div className="stats-content">
-            <p>Stats tracking coming soon...</p>
-            <p>Total meals logged: {meals.length}</p>
           </div>
         </div>
       )}
