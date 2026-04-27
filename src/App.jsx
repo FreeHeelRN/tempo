@@ -18,6 +18,12 @@ During onboarding, gather:
 4. Their weight/body composition goal
 5. How aggressive they want to be
 6. Their sleep quality
+7. What tracking tools they currently use (Apple Watch, Fitbit, Whoop, Oura, smart scale like Hume Pod/Withings/DEXA access, food tracking apps, etc.)
+
+Note their tracking setup so you can:
+- Reference their existing data sources
+- Suggest better alternatives if relevant (e.g., if they use a regular scale, mention DEXA or Hume Pod for body composition)
+- Tailor advice based on what metrics they can already track
 
 After onboarding, you're their ongoing coach. Answer questions, analyze meals, provide encouragement, and adjust advice based on their logged data.`;
 
@@ -75,7 +81,7 @@ function App() {
     setView('chat')
     setChatHistory([{
       role: 'chuck',
-      content: "Hey! I'm Chuck, your nutrition coach. Let's figure out what's going to work best for you. First question: What are you currently doing for nutrition?"
+      content: "Hey! I'm Chuck, your nutrition coach. Let's figure out what's going to work best for you.\n\nFirst, tell me: What are you currently using to track your health? (Apple Watch, Fitbit, Whoop, Oura, smart scale, food tracking apps, or nothing yet?)"
     }])
   }
 
