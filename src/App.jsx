@@ -377,8 +377,9 @@ function App() {
               <button 
                 className="btn-primary"
                 onClick={(e) => {
-                  const input = e.target.previousElementSibling.previousElementSibling
-                  if (input.value) updateStat(editingCard, input.value)
+                  const modal = e.target.closest('.modal-content')
+                  const input = modal.querySelector('input')
+                  if (input && input.value) updateStat(editingCard, input.value)
                 }}
               >
                 Save
